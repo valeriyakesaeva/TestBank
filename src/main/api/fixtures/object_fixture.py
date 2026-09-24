@@ -12,6 +12,8 @@ def created_obj():
     objects: List[Any] = []
     yield objects
     clean_users(objects)
+#До yield создаётся пустой список. Тест и Steps добавляют туда созданные объекты. После
+#теста clean_users удаляет пользователей через API, даже если тест упал.
 
 def clean_users(objects: List[Any]):
     api_manager = ApiManager(objects)

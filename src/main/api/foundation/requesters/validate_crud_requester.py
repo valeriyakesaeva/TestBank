@@ -6,6 +6,9 @@ from src.main.api.foundation.requesters.crud_requster import CrudRequester
 from src.main.api.models.base_model import BaseModel
 
 class ValidateCrudRequester(HttpRequester):
+#ValidateCrudRequester использует CrudRequester, затем преобразует JSON в модель ответа.
+#ValidateCrudRequester подходит только эндпоинтам с response_model.
+#Для DELETE, где response_model=None, нужно вернуть сырой Response или отдельный результат, а не вызывать model_validate.
     def __init__(self, request_spec, endpoint, response_spec):
         super().__init__(request_spec, endpoint, response_spec)
         self.crud_requester = CrudRequester(
@@ -16,7 +19,7 @@ class ValidateCrudRequester(HttpRequester):
 
     def post(self, model: Optional[BaseModel] = None) -> BaseModel:
         response = self.crud_requester.post(model)
-        with allure.step(f'POST {Config.fetch('backendUrl')}{self.endpoint.value.url} and Validated Model'):
+        with allure.step(f"POST {Config.fetch('backendUrl')}{self.endpoint.value.url} and Validated Model"):
             allure.attach(f'Validated Model response: {self.endpoint.value.response_model.__name__}')
 
         self.response_spec(response)

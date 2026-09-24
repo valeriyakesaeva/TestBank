@@ -8,17 +8,17 @@ from src.main.api.generators.creation_rule import CreationRule
 class RandomModelGenerator:
     @staticmethod
     def generate(cls: type) -> Any:
-        type_hints = get_type_hints(cls, include_extras=True)
+        type_hints = get_type_hints(cls, include_extras=True) #Читает типы и сохраняет дополнительные данные Annotated
         init_data = {}
 
-        for field_name, annotated_type in type_hints.items():
+        for field_name, annotated_type in type_hints.items(): #По очереди обрабатывает каждое поле модели
             rule = None
             actual_type = annotated_type
 
-            if get_origin(annotated_type) is Annotated:
-                actual_type, *annotations = get_args(annotated_type)
+            if get_origin(annotated_type) is Annotated: #Проверяет, обёрнут ли тип в Annotated
+                actual_type, *annotations = get_args(annotated_type) #Достаёт настоящий тип и дополнительные аннотации
                 for ann in annotations:
-                    if isinstance(ann, CreationRule):
+                    if isinstance(ann, CreationRule): #Находит именно правило генерации
                         rule = ann
 
             if rule:
@@ -26,9 +26,10 @@ class RandomModelGenerator:
             else:
                 value = RandomModelGenerator._generate_value(actual_type)
 
-            init_data[field_name] = value
+            init_data[field_name] = value #Собирает словарь аргументов будущей модели
 
-        return cls(**init_data)
+        return cls(**init_data) #Распаковывает словарь и создаёт Pydantic-модель
+    #`*annotations` собирает остаток в список, а `**init_data` раскрывает словарь в именованные аргументы.
 
     @staticmethod
     def _generate_from_regex(regex: str, field_type) -> Any:

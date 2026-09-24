@@ -7,6 +7,9 @@ from src.main.api.models.base_model import BaseModel
 import allure
 
 class CrudRequester(HttpRequester):
+#Он превращает модель в словарь, отправляет HTTP-запрос, проверяет статус и возвращает сырой requests.Response.
+#Почему `None`, а не пустая строка. В архиве при отсутствии модели отправляется `json=''`.
+# Это JSON-строка, а не отсутствие тела. Для POST без тела корректнее `None` или вообще не передавать параметр json.
     def post(self, model: Optional[BaseModel]) -> Response:
         body = model.model_dump() if model is not None else ""
 
@@ -19,7 +22,7 @@ class CrudRequester(HttpRequester):
         )
         allure.attach(
             response.text,
-            'Request body',
+            'Response body',
             allure.attachment_type.JSON
         )
         self.response_spec(response)
