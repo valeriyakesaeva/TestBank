@@ -12,6 +12,7 @@ from src.main.api.models.credit_response import CreditResponse
 from src.main.api.models.deposit_account_request import DepositAccountRequest
 from src.main.api.models.deposit_account_response import DepositAccountResponse
 from src.main.api.db.crud.credit_crud import CreditCrudDb
+from src.main.api.test_data.bank_rules import BankRules
 
 
 @pytest.fixture
@@ -69,12 +70,12 @@ def funded_accounts(
         created_accounts: tuple[CreateAccountResponse, CreateAccountResponse]
 ) -> tuple[DepositAccountResponse, CreateAccountResponse]:
     first_account, second_account = created_accounts
-    deposit_request = DepositAccountRequest(accountId=first_account.id, amount=1000)
+    deposit_request = DepositAccountRequest(accountId=first_account.id, amount=BankRules.DEPOSIT_MIN_AMOUNT)
     funded_from_account = api_manager.user_steps.deposit_account(create_user_request, deposit_request)
 
     return funded_from_account, second_account
-# первый объект → пополненный счёт с балансом 1000
-# второй объект → пустой счёт с балансом 0
+# первый объект — пополненный счёт отправителя
+# второй объект — пустой счёт получателя
 
 @pytest.fixture
 def credit_account(
@@ -90,17 +91,9 @@ def credit_account(
 def created_credit(
         api_manager: ApiManager,
         credit_user_request: CreateUserRequest,
-        credit_account: CreateAccountResponse
+        credit_request: CreditRequest
 ) -> CreditResponse:
-    credit_request = CreditRequest(
-        accountId=credit_account.id,
-        amount=5000,
-        termMonths=12
+    return api_manager.user_steps.credit_request(
+        credit_user_request,
+        credit_request
     )
-    credit_response = api_manager.user_steps.credit_request(credit_user_request, credit_request)
-
-    return credit_response
-
-
-
-

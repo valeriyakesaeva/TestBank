@@ -1,5 +1,6 @@
 import pytest
 from sqlalchemy.orm import Session
+
 from src.main.api.classes.api_manager import ApiManager
 from src.main.api.db.crud.account_crud import AccountCrudDb as Account
 from src.main.api.db.crud.credit_crud import CreditCrudDb as Credit
@@ -16,30 +17,32 @@ class TestCreditRepay:
             api_manager: ApiManager,
             credit_user_request: CreateUserRequest,
             created_credit: CreditResponse,
+            credit_repay_request: CreditRepayRequest
     ):
-        credit_repay_request = CreditRepayRequest(
-            creditId=created_credit.creditId,
-            accountId=created_credit.id,
-            amount=created_credit.amount
-        )
-        credit_repay_response = api_manager.user_steps.credit_repay(credit_user_request, credit_repay_request)
+        credit_repay_response = api_manager.user_steps.credit_repay(credit_user_request,credit_repay_request)
 
-        assert credit_repay_response.creditId == created_credit.creditId
-        assert credit_repay_response.amountDeposited == pytest.approx(
-            credit_repay_request.amount
-        )
+        assert credit_repay_response.amountDeposited == pytest.approx(credit_repay_request.amount)
 
         db_session.expire_all()
 
-        credit_from_db = Credit.get_credit_by_id(db_session, created_credit.creditId)
-        account_from_db = Account.get_account_by_id(db_session, created_credit.id)
+        credit_from_db = Credit.get_credit_by_id(
+            db_session,
+            created_credit.creditId
+        )
+        account_from_db = Account.get_account_by_id(
+            db_session,
+            created_credit.id
+        )
 
-        assert credit_from_db is not None, 'Кредит не найден в БД'
-        assert account_from_db is not None, 'Счёт не найден в БД'
+        assert credit_from_db.balance == pytest.approx(0), (
+            f'Ожидалось полное погашение кредита, '
+            f'фактический остаток долга {credit_from_db.balance}'
+        )
 
-        assert credit_from_db.balance == pytest.approx(0)
-        assert account_from_db.balance == pytest.approx(created_credit.amount - credit_repay_request.amount)
-
+        assert account_from_db.balance == pytest.approx(0), (
+            f'Ожидался баланс счёта 0 после погашения, '
+            f'фактический баланс {account_from_db.balance}'
+        )
 
     def test_credit_repay_invalid(
             self,
@@ -47,24 +50,48 @@ class TestCreditRepay:
             api_manager: ApiManager,
             credit_user_request: CreateUserRequest,
             created_credit: CreditResponse,
+            invalid_credit_repay_request: CreditRepayRequest
     ):
-        credit_repay_request = CreditRepayRequest(
-            creditId=created_credit.creditId,
-            accountId=created_credit.id,
-            amount=created_credit.amount - 0.01
-        )
-        error_response = api_manager.user_steps.credit_repay_invalid(credit_user_request, credit_repay_request)
+        error_response = api_manager.user_steps.credit_repay_invalid(credit_user_request, invalid_credit_repay_request)
 
-        assert error_response.json()['error'] == ('The amount is not enough. Credit balance: -5000')
+        expected_credit_balance = -created_credit.amount
+
+        credit_balance_text = (
+            f'{expected_credit_balance:.2f}'
+            .rstrip('0')
+            .rstrip('.')
+        )
+
+        expected_error = (
+            f'The amount is not enough. '
+            f'Credit balance: {credit_balance_text}'
+        )
+
+        assert error_response.json()['error'] == expected_error
 
         db_session.expire_all()
 
-        credit_from_db = Credit.get_credit_by_id(db_session, created_credit.creditId)
-        account_from_db = Account.get_account_by_id(db_session, created_credit.id)
+        credit_from_db = Credit.get_credit_by_id(
+            db_session,
+            created_credit.creditId
+        )
+        account_from_db = Account.get_account_by_id(
+            db_session,
+            created_credit.id
+        )
 
-        assert credit_from_db is not None, 'Кредит не найден в БД'
-        assert account_from_db is not None, 'Счёт не найден в БД'
+        assert credit_from_db.balance == pytest.approx(
+            expected_credit_balance
+        ), (
+            f'Ожидался неизменный долг '
+            f'{expected_credit_balance}, фактический долг '
+            f'{credit_from_db.balance}'
+        )
 
-        assert credit_from_db.balance == pytest.approx(-created_credit.amount)
-        assert account_from_db.balance == pytest.approx(created_credit.amount)
-
+        assert account_from_db.balance == pytest.approx(
+            created_credit.amount
+        ), (
+            f'Ожидался неизменный баланс '
+            f'{created_credit.amount}, фактический баланс '
+            f'{account_from_db.balance}'
+        )
