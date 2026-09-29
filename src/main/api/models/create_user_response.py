@@ -5,3 +5,4 @@ class CreateUserResponse(BaseModel):
     username: str
     password: str
     role: str
+ #model_validate(response.json())` проверяет наличие полей и их типы, затем создаёт удобный Python-объект.

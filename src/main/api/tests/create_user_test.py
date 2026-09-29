@@ -10,7 +10,7 @@ from src.main.api.models.create_user_request import CreateUserRequest
 class TestCreateUser:
     @pytest.mark.parametrize(
         'create_user_request',
-        [RandomModelGenerator.generate(CreateUserRequest)]
+        [RandomModelGenerator.generate(CreateUserRequest)], ids=['valid_user']
     )
     def test_create_user_valid(self, api_manager: ApiManager, create_user_request: CreateUserRequest, db_session: Session):
         response = api_manager.admin_steps.create_user(create_user_request)

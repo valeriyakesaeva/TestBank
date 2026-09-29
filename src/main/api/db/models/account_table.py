@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from src.main.api.db.base import Base
+from src.main.api.db.models.user_table import User
+
 
 class Account(Base):
     __tablename__ = "account"
@@ -8,5 +10,5 @@ class Account(Base):
     number = Column(String, unique=True, nullable=False)
     balance = Column(Float, nullable=False)
 
-def __repr__(self):
-    return f'<Account(id={self.id}, user_id={self.user_id}, number={self.number}, balance={self.balance})>'
+    def __repr__(self):
+        return f'<Account(id={self.id}, user_id={self.user_id}, number={self.number}, balance={self.balance})>'

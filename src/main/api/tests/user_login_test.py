@@ -2,6 +2,7 @@ import pytest
 
 from src.main.api.models.login_user_request import  LoginUserRequest
 
+
 @pytest.mark.api
 class TestUserLogin:
     def test_login_admin(self, api_manager):

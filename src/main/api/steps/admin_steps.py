@@ -17,7 +17,12 @@ class AdminSteps(BaseSteps):
 
         self.created_obj.append(response)
         return response
-
+#Выполняется login администратора и создаются auth-заголовки.
+#Выбирается ADMIN_CREATE_USER.
+#Устанавливается ожидание HTTP 200.
+#ValidateCrudRequester отправляет запрос и валидирует JSON.
+#Созданный пользователь записывается в created_obj для удаления.
+#Модель ответа возвращается тесту.
     def delete_user(self, user_id: int):
         CrudRequester(
             RequestSpecs.auth_headers(username="admin", password="123456"),
@@ -31,6 +36,8 @@ class AdminSteps(BaseSteps):
             Endpoint.ADMIN_CREATE_USER,
             ResponseSpecs.request_bad()
         ).post(create_user_request)
+#Здесь нужен сырой CrudRequester: ошибка API может иметь другую JSON-структуру, поэтому
+#её нельзя проверять моделью успешного CreateUserResponse.
 
     def login_user(self, login_user_request: LoginUserRequest):
         response = ValidateCrudRequester(

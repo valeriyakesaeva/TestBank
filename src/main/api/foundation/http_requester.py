@@ -8,3 +8,4 @@ class HttpRequester:
         self.request_spec = request_spec
         self.endpoint = endpoint
         self.response_spec = response_spec
+#Базовый класс хранит три зависимости: заголовки, описание эндпоинта и функцию проверки ответа

@@ -15,5 +15,5 @@ class UserCrudDb:
         db.refresh(user)
         return user
 
-
+#Тест вызывает понятный метод вместо написания SQLAlchemy-цепочки прямо в каждом сценарии
 

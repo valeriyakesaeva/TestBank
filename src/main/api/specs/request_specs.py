@@ -15,6 +15,7 @@ class RequestSpecs:
 
     @staticmethod
     def auth_headers(username: str, password: str):
+        #Метод auth_headers сначала выполняет отдельный login-запрос, получает token и возвращает заголовок `Authorization: Bearer ...`.
         request = LoginUserRequest(username=username, password=password)
         response = requests.post(
             url="http://localhost:4111/api/auth/token/login",
