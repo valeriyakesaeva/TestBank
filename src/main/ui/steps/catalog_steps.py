@@ -1,6 +1,8 @@
 import allure
 from ui.pages.catalog_page import CatalogPage
 from playwright.sync_api import Page, expect
+from ui.pages.login_page import LoginPage
+
 
 class CatalogSteps:
     def __init__(self, page: Page):
@@ -9,7 +11,9 @@ class CatalogSteps:
 
     @allure.step("Логинимся пользователем {username}")
     def login(self, username: str, password: str):
-        self.catalog.login(username, password)
+        login_page = LoginPage(self.page)
+        login_page.open()
+        login_page.login(username, password)
         return self
 
     @allure.step("Добавляем товар в корзину: {product_name}")

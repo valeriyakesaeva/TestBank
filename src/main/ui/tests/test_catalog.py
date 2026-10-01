@@ -64,4 +64,10 @@ def test_remove_item_from_catalog(page):
     steps = CatalogSteps(page)
     steps.login("standard_user", "secret_sauce")
 
-    steps.remove_from_cart("Test.allTheThings() T-Shirt (Red)")
+    product_name = "Test.allTheThings() T-Shirt (Red)"
+
+    steps.add_to_cart(product_name)
+    expect(steps.catalog.cart_badge).to_have_text("1")
+
+    steps.remove_from_cart(product_name)
+    expect(steps.catalog.cart_badge).not_to_be_visible()

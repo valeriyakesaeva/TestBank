@@ -1,10 +1,11 @@
 from playwright.sync_api import Page, expect
+from ui.pages.base_page import BasePage
 
-class CheckoutPage:
-    URL = "https://www.saucedemo.com/checkout-step-one.html"
+
+class CheckoutPage(BasePage):
 
     def __init__(self, page: Page):
-        self.page = page
+        super().__init__(page)
         self.first_name_input = page.locator('[data-test="firstName"]')
         self.last_name_input = page.locator('[data-test="lastName"]')
         self.postal_code_input = page.locator('[data-test="postalCode"]')

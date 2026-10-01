@@ -1,6 +1,8 @@
 import pytest
 from playwright.sync_api import sync_playwright
 
+from ui.pages.login_page import LoginPage
+
 
 @pytest.fixture(scope="session")
 def playwright_instance():
@@ -23,8 +25,7 @@ def page(browser):
 @pytest.fixture
 def auth_page(page):
     # Авторизация
-    page.goto("https://www.saucedemo.com/")
-    page.get_by_placeholder("Username").fill("standard_user")
-    page.get_by_placeholder("Password").fill("secret_sauce")
-    page.locator("#login-button").click()
+    login_page = LoginPage(page)
+    login_page.open()
+    login_page.login("standard_user", "secret_sauce")
     return page  # Возвращаем авторизованную страницу

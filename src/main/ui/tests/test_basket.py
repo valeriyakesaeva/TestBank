@@ -1,3 +1,5 @@
+from playwright.sync_api import expect
+
 from ui.steps.catalog_steps import CatalogSteps
 from ui.steps.checkout_steps import CheckoutSteps
 from ui.steps.basket_steps import BasketSteps
@@ -78,18 +80,24 @@ def test_checkout_multiple_items(page):
     assert checkout_total == basket_total, "Сумма товаров в Checkout не совпадает с корзиной"
 
 
-def test_checkout_without_items(page):
+def test_checkout_without_postal_code(page):
     catalog = CatalogSteps(page)
     basket = BasketSteps(page)
     checkout = CheckoutSteps(page)
 
     catalog.login("standard_user", "secret_sauce")
+    catalog.add_to_cart("Sauce Labs Backpack")
 
     basket.open_cart()
-    items = basket.get_item_names()
-    assert len(items) == 0, "Корзина не пуста"
-
+    basket.expect_item_in_cart("Sauce Labs Backpack")
     basket.checkout()
-    checkout.start_checkout(first_name="NewUser", last_name="Nrk", postal_code="")
-    error_text = checkout.get_error_text()
-    assert error_text != "", "Ожидалась ошибка при оформлении пустой корзины"
+
+    checkout.start_checkout(
+        first_name="NewUser",
+        last_name="Test",
+        postal_code="",
+    )
+
+    expect(checkout.checkout.error_message).to_have_text(
+        "Error: Postal Code is required"
+    )
